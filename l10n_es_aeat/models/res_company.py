@@ -13,13 +13,20 @@ class ResCompany(models.Model):
     _inherit = "res.company"
 
     tax_agency_id = fields.Many2one("aeat.tax.agency", string="Tax Agency")
+    representative_vat = fields.Char(
+        string="L.R. VAT number",
+        size=9,
+        help="Legal Representative VAT number for all the AEAT reports of this company.",
+    )
 
     @api.model_create_multi
     def create(self, vals_list):
         """Create immediately all the AEAT sequences when creating company."""
         companies = super().create(vals_list)
-        models = self.env["ir.model"].search(
-            [("model", "=like", "l10n.es.aeat.%.report")]
+        models = (
+            self.env["ir.model"]
+            .sudo()
+            .search([("model", "=like", "l10n.es.aeat.%.report")])
         )
         for model in models:
             try:
